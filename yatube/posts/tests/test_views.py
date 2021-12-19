@@ -206,12 +206,11 @@ class PaginatorViewsTest(TestCase):
             description='Test_Group',
             slug='text-slug'
         )
-        for i in range(13):
-            Post.objects.create(
-                author=cls.user,
-                text='Текст {i}',
-                group=cls.group,
-            )
+        Post.objects.bulk_create(
+            Post(text='Текст {i}',
+                 author=cls.user,
+                 group=cls.group) for i in range(13)
+        )
 
     def setUp(self):
         self.client = Client()
@@ -244,22 +243,24 @@ class FollowViewsTest(TestCase):
         cls.user = User.objects.create(username='User')
 
     def setUp(self):
-        self.user1 = Client()
-        self.user2 = Client()
-        self.user1.force_login(self.user)
-        self.user2.force_login(self.author)
+        self.follower = Client()
+        self.Author = Client()
+        self.follower.force_login(self.user)
+        self.Author.force_login(self.author)
 
     def test_follow(self):
         count = Follow.objects.count()
-        self.user1.get(
+        self.follower.get(
             reverse(
                 'posts:profile_follow',
                 kwargs={'username': self.author}
             )
         )
-        Follow.objects.count()
         self.assertEqual(count + 1, Follow.objects.count())
-        self.user1.get(
+
+    def test_unfollow(self):
+        count = Follow.objects.count()
+        self.follower.get(
             reverse(
                 'posts:profile_unfollow',
                 kwargs={'username': self.author}
@@ -270,14 +271,14 @@ class FollowViewsTest(TestCase):
     def test_follow_new_post(self):
         Follow.objects.create(user=self.user, author=self.author)
         post = Post.objects.create(author=self.author, text='Текст')
-        response = self.user1.get(reverse(
+        response = self.follower.get(reverse(
             'posts:follow_index'
         ))
         self.assertIn(post, response.context['page_obj'])
 
     def test_nofollow_new_post(self):
         post = Post.objects.create(author=self.author, text='Текст')
-        response = self.user1.get(reverse(
+        response = self.follower.get(reverse(
             'posts:follow_index'
         ))
         self.assertNotIn(post, response.context['page_obj'])
