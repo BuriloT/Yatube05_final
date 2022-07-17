@@ -7,7 +7,8 @@
 
 ## Технологии проекта
 
--Python 3, Django 2.2, PostgreSQL, gunicorn, nginx, Яндекс.Облако(Ubuntu 20.04), Unittest.
+- Python 3, Django 2.2, PostgreSQL, Unittest.
+- Gunicorn, nginx, Яндекс.Облако(Ubuntu 20.04)
 
 ## Как запустить проект:
 
